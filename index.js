@@ -27,32 +27,48 @@ const { listening_port, open_rgb_host, open_rgb_port } = parser.parse_args();
 if (!listening_port || !open_rgb_host || !open_rgb_port) {
     parser.print_help()
 } else {
-    start();
+    const rgbClient = new Client("Loxone", open_rgb_port, open_rgb_host);
+    rgbClient.connect().then(function() {
+        net.createServer(function(sock) {
+            sock.on("data", function(buffer) {
+                try {
+                    let lxColor = parseInt(buffer.toString()),
+                    color = {
+                        red: 0,
+                        green: 0,
+                        blue: 0
+                    };
+                    color.bluePercent = (lxColor/1000000) | 0;
+                    color.blue = 2.55 * color.bluePercent;
+                    color.greenPercent = ((lxColor - color.bluePercent * 1000000) / 1000) | 0;
+                    color.green = 2.55 * color.greenPercent;
+                    color.redPercent = (lxColor - color.bluePercent * 1000000 - color.greenPercent * 1000) | 0;
+                    color.red = 2.55 * color.redPercent;
+                    rgbClient.getControllerCount().then((ammount) => {
+                        for (let deviceId = 0; deviceId < ammount; deviceId++) {
+                            rgbClient.getControllerData(deviceId).then((device) => {
+                                rgbClient.updateLeds(deviceId, Array(device.colors.length).fill(color));
+                            });
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Couldn't interprete lxColorValue, ignore...");
+                }
+            });
+        }).listen(listening_port, "0.0.0.0");
+    });
 }
 
-// The actual start of the application
-async function start() {
-    const rgbClient = new Client("Loxone", open_rgb_port, open_rgb_host);
-    //await rgbClient.connect();
-
-    /*net.createServer(function(sock) {
-        console.log("TCP socket is listening listening for colors...");
-        sock.on("data", function(data) {
-            console.log(`${sock.remoteAddress} sent ${data}`);
-        });
-    }).listen(listening_port, "0.0.0.0");*/
-
-    const ammount = await rgbClient.getControllerCount(),
-        violet = {
-            red: 138,
-            green: 43,
-            blue: 226
-        };
-    let devices = [];
-    for (let deviceId = 0; deviceId < ammount; deviceId++) {
-        let device = await rgbClient.updateLeds(deviceId, Array(device.colors.length).fill(violet));
-        await rgbClient.updateLeds(deviceId, Array(device.colors.length).fill(violet));
+function convertToRange(value, srcRange, dstRange){
+    // value is outside source range return
+    if (value < srcRange[0] || value > srcRange[1]){
+      return NaN; 
     }
-
-    await rgbClient.disconnect();
-};
+  
+    var srcMax = srcRange[1] - srcRange[0],
+        dstMax = dstRange[1] - dstRange[0],
+        adjValue = value - srcRange[0];
+  
+    return (adjValue * dstMax / srcMax) + dstRange[0];
+  
+  }
