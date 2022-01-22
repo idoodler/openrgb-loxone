@@ -14,7 +14,8 @@ Run this on a device which is always up and running (I intended it for a Raspber
 
 # Features
 - Easy to use
-- Live color preview in terminal (if supported) ![alt text][liveColorPreview]
+- Live color preview in terminal (if supported)
+ - ![alt text][liveColorPreview]
 - Automatic recovery if the PC is offline
 
 ## Installation
