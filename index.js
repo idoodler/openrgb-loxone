@@ -1,7 +1,9 @@
 const { ArgumentParser } = require("argparse"),
-    { version, description } = require("./package.json"),
+    { name, version, description } = require("./package.json"),
     net = require('net'),
+    Q = require("q"),
     { Client } = require("openrgb-sdk"),
+    chalk = require("chalk"),
     parser = new ArgumentParser({
         description: description
     });
@@ -25,33 +27,38 @@ const { listening_port, open_rgb_host, open_rgb_port } = parser.parse_args();
 if (!listening_port || !open_rgb_host || !open_rgb_port) {
     parser.print_help();
 } else {
-    const rgbClient = new Client("Loxone", open_rgb_port, open_rgb_host);
-    rgbClient.connect().then(function() {
-        net.createServer(function(sock) {
-            sock.on("data", function(buffer) {
-                try {
-                    let lxColor = parseInt(buffer.toString()),
+    net.createServer(function(sock) {
+        sock.on("data", function(buffer) {
+            try {
+                let rgbClientPrms = getRGBClient(),
+                    lxColor = parseInt(buffer.toString()),
                     color = {
                         red: 0,
                         green: 0,
                         blue: 0
                     };
-                    // Intermediate step in getting the RGB value from the Loxone RGB Value
-                    color.bluePercent = (lxColor/1000000) | 0;
-                    color.greenPercent = ((lxColor - color.bluePercent * 1000000) / 1000) | 0;
-                    color.redPercent = (lxColor - color.bluePercent * 1000000 - color.greenPercent * 1000) | 0;
+                // Intermediate step in getting the RGB value from the Loxone RGB Value
+                color.bluePercent = (lxColor/1000000) | 0;
+                color.greenPercent = ((lxColor - color.bluePercent * 1000000) / 1000) | 0;
+                color.redPercent = (lxColor - color.bluePercent * 1000000 - color.greenPercent * 1000) | 0;
 
-                    // These are the real RGB Values
-                    color.blue = (2.55 * color.bluePercent) | 0;
-                    color.green = (2.55 * color.greenPercent) | 0;
-                    color.red = (2.55 * color.redPercent) | 0;
-                    delete color.bluePercent;
-                    delete color.greenPercent;
-                    delete color.redPercent;
-                
-                    // Thats the color we are setting
+                // These are the real RGB Values
+                color.blue = (2.55 * color.bluePercent) | 0;
+                color.green = (2.55 * color.greenPercent) | 0;
+                color.red = (2.55 * color.redPercent) | 0;
+                delete color.bluePercent;
+                delete color.greenPercent;
+                delete color.redPercent;
+            
+                // Thats the color we are setting
+                if (chalk.supportsColor) {
+                    console.log(`Received ${chalk.bgRgb(color.red, color.green, color.blue)("  ")} from: ${sock.remoteAddress}`);
+                } else {
+                    console.log(`Received color from: ${sock.remoteAddress}`);
                     console.dir(color);
+                }
 
+                rgbClientPrms.done((rgbClient) => {
                     rgbClient.getControllerCount().then((ammount) => {
                         for (let deviceId = 0; deviceId < ammount; deviceId++) {
                             rgbClient.getControllerData(deviceId).then((device) => {
@@ -59,10 +66,42 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                             });
                         }
                     });
-                } catch (e) {
-                    console.warn("Couldn't interprete lxColorValue, ignore...");
-                }
-            });
-        }).listen(listening_port, "0.0.0.0");
-    });
+                }, (e) => {
+                    console.warn("Couldn't establish a connection to OpenRGB");
+                    console.error(e);
+                });
+            } catch (e) {
+                console.warn("Couldn't interprete lxColorValue, ignore...");
+            }
+        });
+    }).listen(listening_port, "0.0.0.0");
+}
+
+/**
+ * 
+ * @returns Ensures we always have a client
+ */
+function getRGBClient() {
+    let defer = Q.defer();
+    if (!this._rgbClient) {
+        this._rgbClient = new Client(name, open_rgb_port, open_rgb_host);
+        this._rgbClient.on("disconnect", () => {
+            this._rgbClient.disconnect();
+            delete this._rgbClient;
+        });
+        this._rgbClient.on("error", () => {
+            this._rgbClient.disconnect();
+            delete this._rgbClient;
+        });
+        defer.resolve(this._rgbClient.connect().then(() => {
+            return this._rgbClient;
+        }, (e) => {
+            this._rgbClient.disconnect();
+            delete this._rgbClient;
+            throw e;
+        }));
+    } else {
+        defer.resolve(this._rgbClient);
+    }
+    return defer.promise;
 }

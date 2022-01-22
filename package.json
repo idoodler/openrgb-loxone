@@ -14,6 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "argparse": "^2.0.1",
-    "openrgb-sdk": "^0.5.1"
+    "chalk": "^5.0.0",
+    "openrgb-sdk": "^0.5.1",
+    "q": "^1.5.1"
   }
 }
