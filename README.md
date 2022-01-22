@@ -17,6 +17,16 @@ Run this on a device which is always up and running (I intended it for a Raspber
 - enter the directory
 - execute `npm i` to install all dependencies
 
+## Automatically keep this script allive
+To archive this I am using `pm2`
+- `npm i pm2 -g`
+- enter this project directory
+- `pm2 start index.js --name OpenRGBLoxone --watch -- --listening-port YOUR_PORT --open-rgb-host YOUR_OPEN_RGB_HOST --open-rgb-port YOUR_OPEN_RGB_PORT`
+ - `--watch` will automatically restart the script whenever a file changes in the directory
+- `pm2 startup`
+ - Follow the commands output
+- `pm2 save`
+
 ## Mandatory arguments
 - `--listening-port`
 - `--open-rgb-host`
