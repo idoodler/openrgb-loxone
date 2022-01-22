@@ -12,7 +12,12 @@ Run this on a device which is always up and running (I intended it for a Raspber
 # Requirements
 - Node.js
 
-## installation
+# Features
+- Easy to use
+- Live color preview in terminal (if supported) ![alt text][liveColorPreview]
+- Automatic recovery if the PC is offline
+
+## Installation
 - Clone or download this repo
 - enter the directory
 - execute `npm i` to install all dependencies
@@ -38,3 +43,4 @@ Requires the following Loxone Library Plugin
 [![alt text][worksWithLoxone]](https://library.loxone.com)
 
 [worksWithLoxone]: ./assets/worksWithLoxone.svg "Works With Loxone"
+[liveColorPreview]: ./assets/liveColorPreview.png "Live Color Preview"
