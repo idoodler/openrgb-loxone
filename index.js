@@ -38,12 +38,16 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                         green: 0,
                         blue: 0
                     };
+                    // Intermediate step in getting the RGB value from the Loxone RGB Value
                     color.bluePercent = (lxColor/1000000) | 0;
-                    color.blue = 2.55 * color.bluePercent;
                     color.greenPercent = ((lxColor - color.bluePercent * 1000000) / 1000) | 0;
-                    color.green = 2.55 * color.greenPercent;
                     color.redPercent = (lxColor - color.bluePercent * 1000000 - color.greenPercent * 1000) | 0;
+
+                    // These are the real RGB Values
+                    color.blue = 2.55 * color.bluePercent;
+                    color.green = 2.55 * color.greenPercent;
                     color.red = 2.55 * color.redPercent;
+
                     rgbClient.getControllerCount().then((ammount) => {
                         for (let deviceId = 0; deviceId < ammount; deviceId++) {
                             rgbClient.getControllerData(deviceId).then((device) => {
@@ -58,17 +62,3 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
         }).listen(listening_port, "0.0.0.0");
     });
 }
-
-function convertToRange(value, srcRange, dstRange){
-    // value is outside source range return
-    if (value < srcRange[0] || value > srcRange[1]){
-      return NaN; 
-    }
-  
-    var srcMax = srcRange[1] - srcRange[0],
-        dstMax = dstRange[1] - dstRange[0],
-        adjValue = value - srcRange[0];
-  
-    return (adjValue * dstMax / srcMax) + dstRange[0];
-  
-  }
