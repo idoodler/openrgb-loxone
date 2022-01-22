@@ -12,7 +12,7 @@ parser.add_argument("-v", "--version", {
 });
 parser.add_argument("--listening-port", {
     help: "The port to listen for Loxone TCP commands. E.g.: 7777"
-});s
+});
 parser.add_argument("--open-rgb-host", {
     help: "The host OpenRGB runs on. E.g.: localhost"
 });
