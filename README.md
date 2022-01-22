@@ -1,3 +1,5 @@
+# ❗This project is work in progress❗
+
 # OpenRGB Client for Loxone
 
 ---
@@ -6,6 +8,14 @@ Control your OpenRGB devices with a Loxone LightController
 
 # Usage
 Run this on a device which is always up and running (I intended it for a Raspberry Pi)
+
+# Requirements
+- Node.js
+
+## installation
+- Clone or download this repo
+- enter the directory
+- execute `npm i` to install all dependencies
 
 ## Mandatory arguments
 - `--listening-port`
