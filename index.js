@@ -23,7 +23,7 @@ const { listening_port, open_rgb_host, open_rgb_port } = parser.parse_args();
 
 // Verify all required arguments have been passed
 if (!listening_port || !open_rgb_host || !open_rgb_port) {
-    parser.print_help()
+    parser.print_help();
 } else {
     const rgbClient = new Client("Loxone", open_rgb_port, open_rgb_host);
     rgbClient.connect().then(function() {
