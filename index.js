@@ -1,9 +1,7 @@
-const { createServer } = require("http");
-
 const { ArgumentParser } = require("argparse"),
     { version, description } = require("./package.json"),
     net = require('net'),
-    { Client, utils } = require("openrgb-sdk"),
+    { Client } = require("openrgb-sdk"),
     parser = new ArgumentParser({
         description: description
     });
@@ -14,7 +12,7 @@ parser.add_argument("-v", "--version", {
 });
 parser.add_argument("--listening-port", {
     help: "The port to listen for Loxone TCP commands. E.g.: 7777"
-});
+});s
 parser.add_argument("--open-rgb-host", {
     help: "The host OpenRGB runs on. E.g.: localhost"
 });
@@ -44,9 +42,15 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                     color.redPercent = (lxColor - color.bluePercent * 1000000 - color.greenPercent * 1000) | 0;
 
                     // These are the real RGB Values
-                    color.blue = 2.55 * color.bluePercent;
-                    color.green = 2.55 * color.greenPercent;
-                    color.red = 2.55 * color.redPercent;
+                    color.blue = (2.55 * color.bluePercent) | 0;
+                    color.green = (2.55 * color.greenPercent) | 0;
+                    color.red = (2.55 * color.redPercent) | 0;
+                    delete color.bluePercent;
+                    delete color.greenPercent;
+                    delete color.redPercent;
+                
+                    // Thats the color we are setting
+                    console.dir(color);
 
                     rgbClient.getControllerCount().then((ammount) => {
                         for (let deviceId = 0; deviceId < ammount; deviceId++) {
