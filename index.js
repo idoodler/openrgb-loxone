@@ -3,7 +3,7 @@ const { createServer } = require("http");
 const { ArgumentParser } = require("argparse"),
     { version, description } = require("./package.json"),
     net = require('net'),
-    { Client } = require("openrgb-sdk"),
+    { Client, utils } = require("openrgb-sdk"),
     parser = new ArgumentParser({
         description: description
     });
@@ -25,7 +25,6 @@ const { listening_port, open_rgb_host, open_rgb_port } = parser.parse_args();
 
 // Verify all required arguments have been passed
 if (!listening_port || !open_rgb_host || !open_rgb_port) {
-    console.error("Arguments not satisfied!");
     parser.print_help()
 } else {
     start();
@@ -34,14 +33,26 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
 // The actual start of the application
 async function start() {
     const rgbClient = new Client("Loxone", open_rgb_port, open_rgb_host);
-    await rgbClient.connect();
+    //await rgbClient.connect();
 
-    net.createServer(function(sock) {
+    /*net.createServer(function(sock) {
         console.log("TCP socket is listening listening for colors...");
         sock.on("data", function(data) {
             console.log(`${sock.remoteAddress} sent ${data}`);
         });
-    }).listen(listening_port, "0.0.0.0");
+    }).listen(listening_port, "0.0.0.0");*/
+
+    const ammount = await clientInformation.getControllerCount(),
+        violet = {
+            red: 138,
+            green: 43,
+            blue: 226
+        };
+    let devices = [];
+    for (let deviceId = 0; deviceId < ammount; deviceId++) {
+        let device = await rgbClient.updateLeds(deviceId, Array(device.colors.length).fill(violet));
+        await rgbClient.updateLeds(deviceId, Array(device.colors.length).fill(violet));
+    }
 
     await rgbClient.disconnect();
-}
+};
