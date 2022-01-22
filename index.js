@@ -33,8 +33,8 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
 
 // The actual start of the application
 async function start() {
-    /*const rgbClient = new Client("Loxone", open_rgb_port, open_rgb_host);
-    await rgbClient.connect();*/
+    const rgbClient = new Client("Loxone", open_rgb_port, open_rgb_host);
+    await rgbClient.connect();
 
     net.createServer(function(sock) {
         console.log("TCP socket is listening listening for colors...");
@@ -43,5 +43,5 @@ async function start() {
         });
     }).listen(listening_port, "0.0.0.0");
 
-    //await rgbClient.disconnect();
+    await rgbClient.disconnect();
 }
