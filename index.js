@@ -42,7 +42,7 @@ async function start() {
         });
     }).listen(listening_port, "0.0.0.0");*/
 
-    const ammount = await clientInformation.getControllerCount(),
+    const ammount = await rgbClient.getControllerCount(),
         violet = {
             red: 138,
             green: 43,
