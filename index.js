@@ -59,7 +59,7 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                 }
 
                 rgbClientPrms.done((rgbClient) => {
-                    if (rgbClient.disconnect) {
+                    if (!rgbClient.isConnected) {
                         console.warn(`OpenRGB not connected, maybe offline?`);
                         return;
                     }
