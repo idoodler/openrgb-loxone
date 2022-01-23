@@ -52,23 +52,28 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
             
                 // Thats the color we are setting
                 if (chalk.supportsColor) {
-                    console.log(`Received ${chalk.bgRgb(color.red, color.green, color.blue)("  ")} from: ${sock.remoteAddress}`);
+                    console.log(`Received ${chalk.bgRgb(color.red, color.green, color.blue)("   ")} from: ${sock.remoteAddress}`);
                 } else {
                     console.log(`Received color from: ${sock.remoteAddress}`);
                     console.dir(color);
                 }
 
                 rgbClientPrms.done((rgbClient) => {
-                    rgbClient.getControllerCount().then((ammount) => {
+                    if (rgbClient.disconnect) {
+                        console.warn(`OpenRGB not connected, maybe offline?`);
+                        return;
+                    }
+                    return rgbClient.getControllerCount().then((ammount) => {
+                        let prms = [];
                         for (let deviceId = 0; deviceId < ammount; deviceId++) {
-                            rgbClient.getControllerData(deviceId).then((device) => {
+                            prms.push(rgbClient.getControllerData(deviceId).then((device) => {
                                 rgbClient.updateLeds(deviceId, Array(device.colors.length).fill(color));
-                            });
+                            }));
                         }
+                        return Q.all(prms);
                     });
                 }, (e) => {
-                    console.warn("Couldn't establish a connection to OpenRGB");
-                    console.error(e);
+                    console.warn(`Couldn't establish a connection to OpenRGB: ${e.message}`);
                 });
             } catch (e) {
                 console.warn("Couldn't interprete lxColorValue, ignore...");
@@ -78,28 +83,32 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
 }
 
 /**
- * 
- * @returns Ensures we always have a client
+ * Ensures we always have a client
+ * @returns {Client}
  */
 function getRGBClient() {
     let defer = Q.defer();
     if (!this._rgbClient) {
-        this._rgbClient = new Client(name, open_rgb_port, open_rgb_host);
-        this._rgbClient.on("disconnect", () => {
-            this._rgbClient.disconnect();
-            delete this._rgbClient;
-        });
-        this._rgbClient.on("error", () => {
-            this._rgbClient.disconnect();
-            delete this._rgbClient;
-        });
-        defer.resolve(this._rgbClient.connect().then(() => {
-            return this._rgbClient;
-        }, (e) => {
-            this._rgbClient.disconnect();
-            delete this._rgbClient;
-            throw e;
-        }));
+        try {
+            this._rgbClient = new Client(name, open_rgb_port, open_rgb_host);
+            this._rgbClient.on("disconnect", () => {
+                this._rgbClient.disconnect();
+                delete this._rgbClient;
+            });
+            this._rgbClient.on("error", () => {
+                this._rgbClient.disconnect();
+                delete this._rgbClient;
+            });
+            defer.resolve(this._rgbClient.connect().then(() => {
+                return this._rgbClient;
+            }, (e) => {
+                this._rgbClient.disconnect();
+                delete this._rgbClient;
+                throw e;
+            }));
+        } catch (e) {
+            console.warn(`Couldn't establish a connection to OpenRGB: ${e.message}`);
+        }
     } else {
         defer.resolve(this._rgbClient);
     }
