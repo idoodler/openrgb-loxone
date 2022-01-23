@@ -54,8 +54,7 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                 if (chalk.supportsColor) {
                     console.log(`Received ${chalk.bgRgb(color.red, color.green, color.blue)("   ")} from: ${sock.remoteAddress}`);
                 } else {
-                    console.log(`Received color from: ${sock.remoteAddress}`);
-                    console.dir(color);
+                    console.log(`Received rgb(${color.red},${color.green},${color.blue}) from: ${sock.remoteAddress}`);
                 }
 
                 rgbClientPrms.done((rgbClient) => {
