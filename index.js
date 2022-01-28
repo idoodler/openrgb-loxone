@@ -8,6 +8,14 @@ const { ArgumentParser } = require("argparse"),
         description: description
     });
 
+const OFF_MODES = [
+        "Off"
+    ],
+    STATIC_MODES = [
+        "Static",
+        "Direct"
+    ];
+
 // Setup all the CLI param stuff 
 parser.add_argument("-v", "--version", {
     action: "version", version: version
@@ -27,8 +35,8 @@ const { listening_port, open_rgb_host, open_rgb_port } = parser.parse_args();
 if (!listening_port || !open_rgb_host || !open_rgb_port) {
     parser.print_help();
 } else {
-    net.createServer(function(sock) {
-        sock.on("data", function(buffer) {
+    net.createServer((sock) => {
+        sock.on("data", (buffer) => {
             try {
                 let rgbClientPrms = getRGBClient(),
                     lxColor = parseInt(buffer.toString()),
@@ -36,7 +44,8 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                         red: 0,
                         green: 0,
                         blue: 0
-                    };
+                    },
+                    isOff = false;
                 // Intermediate step in getting the RGB value from the Loxone RGB Value
                 color.bluePercent = (lxColor/1000000) | 0;
                 color.greenPercent = ((lxColor - color.bluePercent * 1000000) / 1000) | 0;
@@ -49,6 +58,8 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                 delete color.bluePercent;
                 delete color.greenPercent;
                 delete color.redPercent;
+
+                isOff = !color.blue && !color.green && !color.red;
             
                 // Thats the color we are setting
                 if (chalk.supportsColor) {
@@ -60,13 +71,32 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                 rgbClientPrms.done((rgbClient) => {
                     if (!rgbClient.isConnected) {
                         console.warn(`OpenRGB not connected, maybe offline?`);
+                        rgbClient.disconnect();
                         return;
                     }
                     return rgbClient.getControllerCount().then((ammount) => {
                         let prms = [];
                         for (let deviceId = 0; deviceId < ammount; deviceId++) {
                             prms.push(rgbClient.getControllerData(deviceId).then((device) => {
-                                rgbClient.updateLeds(deviceId, Array(device.colors.length).fill(color));
+                                let newMode,
+                                    colorsToSet = Array(device.colors.length).fill(color);
+
+                                // Get the correct mode for the color
+                                device.modes.forEach((mode) => {
+                                    if (isOff && OFF_MODES.includes(mode.name)) {
+                                        newMode = mode;
+                                    } else if (JSON.stringify(device.colors) !== JSON.stringify(colorsToSet) && STATIC_MODES.includes(mode.name)) {
+                                        newMode = mode;
+                                    }
+                                });
+                                // Only send something if we need to, don't overwhelm OpenRGB
+                                if (newMode) {
+                                    rgbClient.updateMode(deviceId, newMode.id).then(() => {
+                                        rgbClient.updateLeds(deviceId, colorsToSet);
+                                    }, () => {
+                                        console.log(`Failed setting mode for ${device.name}`);
+                                    });
+                                }
                             }));
                         }
                         return Q.all(prms);
