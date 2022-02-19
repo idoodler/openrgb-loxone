@@ -2,8 +2,9 @@ const { ArgumentParser } = require("argparse"),
     { name, version, description } = require("./package.json"),
     net = require('net'),
     Q = require("q"),
-    { Client } = require("openrgb-sdk"),
+    { Client, utils } = require("openrgb-sdk"),
     chalk = require("chalk"),
+    fadeColor  = require("color-fade"),
     parser = new ArgumentParser({
         description: description
     });
@@ -29,7 +30,17 @@ parser.add_argument("--open-rgb-host", {
 parser.add_argument("--open-rgb-port", {
     help: "The port OpenRGB runs on. E.g.: 6742"
 });
-const { listening_port, open_rgb_host, open_rgb_port } = parser.parse_args();
+let args = parser.parse_args();
+
+[
+    "LISTENING_PORT",
+    "OPEN_RGB_HOST",
+    "OPEN_RGB_PORT"
+].forEach((envVar) => {
+    if (process.env[envVar]) {
+        args[envVar.toLowerCase()] = process.env[envVar];
+    }
+});
 
 // Verify all required arguments have been passed
 if (!listening_port || !open_rgb_host || !open_rgb_port) {
@@ -96,6 +107,17 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                                     }, () => {
                                         console.log(`Failed setting mode for ${device.name}`);
                                     });
+
+                                    /*fadeColor(rgbToHex(device.colors[0]), rgbToHex(colorsToSet[0]), 10).then(function(fadeColors) {
+                                        
+                                        fadeColors.forEach(function(fadeStep) {
+                                            rgbClient.updateMode(deviceId, newMode.id).then(() => {
+                                                rgbClient.updateLeds(deviceId, colorsToSet.fill(utils.hexColor(fadeStep)));
+                                            }, () => {
+                                                console.log(`Failed setting mode for ${device.name}`);
+                                            });
+                                        });
+                                    });*/
                                 }
                             }));
                         }
@@ -142,4 +164,8 @@ function getRGBClient() {
         defer.resolve(this._rgbClient);
     }
     return defer.promise;
+}
+
+function rgbToHex(colorObj) {
+    return "#" + ((1 << 24) + (colorObj.red << 16) + (colorObj.green << 8) + colorObj.blue).toString(16).slice(1);
 }

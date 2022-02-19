@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  openrgbloxone:
+    container_name: "openrgb-loxone"
+    build: .
+    environment:
+      - LISTENING_PORT=7777
+      - OPEN_RGB_HOST=gamingpc.local
+      - OPEN_RGB_PORT=6742
+    restart: unless-stopped
