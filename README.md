@@ -1,5 +1,3 @@
-# ❗This project is work in progress❗
-
 # OpenRGB Client for Loxone
 
 ---
@@ -41,7 +39,7 @@ To archive this I am using `pm2`
 
 Requires the following Loxone Library Plugin
 
-[![alt text][worksWithLoxone]](https://library.loxone.com)
+[![alt text][worksWithLoxone]](https://library.loxone.com/detail/openrgb-824/overview)
 
 [worksWithLoxone]: ./assets/worksWithLoxone.svg "Works With Loxone"
 [liveColorPreview]: ./assets/liveColorPreview.png "Live Color Preview"
