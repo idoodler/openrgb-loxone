@@ -6,7 +6,7 @@ const { ArgumentParser } = require("argparse"),
     chalk = require("chalk"),
     fadeColor  = require("color-fade"),
     parser = new ArgumentParser({
-        description: description
+        description
     });
 
 const OFF_MODES = [
@@ -43,7 +43,7 @@ let args = parser.parse_args();
 });
 
 // Verify all required arguments have been passed
-if (!listening_port || !open_rgb_host || !open_rgb_port) {
+if (!args.listening_port || !args.open_rgb_host || !args.open_rgb_port) {
     parser.print_help();
 } else {
     net.createServer((sock) => {
@@ -130,7 +130,7 @@ if (!listening_port || !open_rgb_host || !open_rgb_port) {
                 console.warn("Couldn't interprete lxColorValue, ignore...");
             }
         });
-    }).listen(listening_port, "0.0.0.0");
+    }).listen(args.listening_port, "0.0.0.0");
 }
 
 /**
@@ -141,7 +141,7 @@ function getRGBClient() {
     let defer = Q.defer();
     if (!this._rgbClient) {
         try {
-            this._rgbClient = new Client(name, open_rgb_port, open_rgb_host);
+            this._rgbClient = new Client(name, args.open_rgb_port, args.open_rgb_host);
             this._rgbClient.on("disconnect", () => {
                 this._rgbClient.disconnect();
                 delete this._rgbClient;
