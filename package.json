@@ -1,6 +1,6 @@
 {
   "name": "openrgb-loxone",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Control your OpenRGB installation with Loxone",
   "main": "index.js",
   "scripts": {
