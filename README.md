@@ -41,15 +41,17 @@ To archive this I am using `pm2`
 <details><summary>Docker</summary><p>
 
 ## Using Docker
-You can also run this using Docker, you have to build it yourself tho.
 
 # Build it
 - Clone or download this repo
 - enter the directory
 - execute `docker build . -t idoodler/openrgbloxone` to install all dependencies
 
+# Pull it
+- `docker pull idoodler/openrgbloxone`
+
 # Run it
-`docker run -p 7777:7777 -e PORT=7777 -e OPEN_RGB_HOST=192.168.0.173 -e OPEN_RGB_PORT=6742 --name openrgbLoxone idoodler/openrgbloxone`
+- `docker run -p 7777:7777 -e PORT=7777 -e OPEN_RGB_HOST=192.168.0.173 -e OPEN_RGB_PORT=6742 --name openrgbLoxone idoodler/openrgbloxone`
 
 ## Mandatory environmental variables
 - `PORT`
