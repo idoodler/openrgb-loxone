@@ -1,5 +1,5 @@
 # Use latest node
-FROM node:latest
+FROM node:19.9.0
 
 LABEL authors="idoodler <me@idoodler.de>"
 
