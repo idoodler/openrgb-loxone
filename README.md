@@ -48,10 +48,10 @@ To archive this I am using `pm2`
 - execute `docker build . -t idoodler/openrgbloxone` to install all dependencies
 
 # Pull it
-- `docker pull idoodler/openrgbloxone`
+- `docker pull ghcr.io/idoodler/openrgb-loxone:latest`
 
 # Run it
-- `docker run -p 7777:7777 -e PORT=7777 -e OPEN_RGB_HOST=192.168.0.173 -e OPEN_RGB_PORT=6742 --name openrgbLoxone idoodler/openrgbloxone`
+- `docker run -p 7777:7777 -e PORT=7777 -e OPEN_RGB_HOST=192.168.0.173 -e OPEN_RGB_PORT=6742 --name openrgbLoxone idoodler/ghcr.io/idoodler/openrgb-loxone:latest`
 
 ## Mandatory environmental variables
 - `PORT`
